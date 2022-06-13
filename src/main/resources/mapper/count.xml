@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.happyhouse.model.mapper.CountMapper">
+	<select id="countList" resultType="CountDto">
+		select a.aptCode,b.apartmentName as aptName, a.count,
+		a.preCount, a.preRank, a.rankChange
+		from aptCount a join houseinfo b
+		on a.aptCode = b.aptCode
+		order by preRank 
+		limit 10
+	</select>
+	
+	<select id="preCountList" resultType="CountDto">
+		select aptCode, count,
+		preCount, preRank, rankChange
+		from aptCount
+		order by (count - preCount) desc,preRank
+	</select>
+	
+	<update id="rankUpdate" parameterType="list">
+		<foreach collection="list" item="item" separator=";" open=""
+			close=";">
+			update aptCount
+			set
+			count=#{item.count},preCount=#{item.preCount},
+			preRank=#{item.preRank}, rankChange=#{item.rankChange}
+			where
+			aptCode=#{item.aptCode}
+		</foreach>
+	</update>
+	
+	<update id="visitApt" parameterType="String">
+			update aptCount
+			set
+			count= count+1
+			where
+			aptCode=#{value}
+	</update>
+	<select id="checkApt" parameterType="String" resultType="Int">
+			select count(*) from aptCount
+			where
+			aptCode=#{value}
+	</select>
+	<insert id="visitInsertApt" parameterType="Map">
+		insert into aptCount(aptCode, preRank)
+		values (#{aptCode},#{size})
+	</insert>
+</mapper>
